@@ -1,45 +1,54 @@
+// src/components/Login.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../services/api';
+import axios from 'axios';
 
-const Login = () => {
+const Login = ({ setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
-      const data = await loginUser(email, password);
-      if (data.success) {
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
-      } else {
-        setError(data.error || 'Error al iniciar sesión');
-      }
-    } catch (error) {
-      setError(String(error));
+      const response = await axios.post('http://18.188.139.51:5000/login', {
+        email,
+        password,
+      });
+
+      // Si el login es exitoso, guarda el usuario en el estado
+      setUser(response.data.user);
+      setError('');
+      // Redirigir al usuario o manejar el login exitoso
+      // ejemplo: window.location.href = '/dashboard';
+    } catch (err) {
+      setError('Credenciales incorrectas o error en el servidor');
     }
   };
 
   return (
-    <div className="container">
-      <h2>Iniciar Sesión</h2>
-      {error && <p className="error">{String(error)}</p>}
+    <div className="login-container">
+      <h2>Iniciar sesión</h2>
+      {error && <div className="error">{error}</div>}
       <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div>
+          <label>Correo Electrónico:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Contraseña:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
         <button type="submit">Ingresar</button>
       </form>
     </div>
